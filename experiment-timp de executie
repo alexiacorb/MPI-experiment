@@ -1,0 +1,247 @@
+#include <bits/stdc++.h>
+#include <iomanip>
+#include <chrono>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+using namespace std::chrono;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::microseconds;
+void generateRandomVector(int v[], int n) {
+    for (int i = 0; i < n; ++i) {
+        v[i] = rand()%1000000;
+    }
+}
+
+void copyVector(int source[], int dest[], int n) {
+    copy(source, source + n, dest);
+}
+
+void bubbleSort(int v[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (v[j] > v[j + 1]) {
+                swap(v[j], v[j + 1]);
+            }
+        }
+    }
+}
+
+void insertionSort(int v[], int n) {
+    int i, element, j;
+    for (i = 1; i < n; i++) {
+        element = v[i];
+        j = i - 1;
+        while (j >= 0 && v[j] > element) {
+            v[j + 1] = v[j];
+            j = j - 1;
+        }
+        v[j + 1] = element;
+    }
+}
+
+void selectionSort(int v[], int n) {
+    int i, j, min_idx;
+    for (i = 0; i < n - 1; i++) {
+        min_idx = i;
+        for (j = i + 1; j < n; j++)
+            if (v[j] < v[min_idx])
+                min_idx = j;
+        swap(v[min_idx], v[i]);
+    }
+}
+
+
+
+
+void merge(int v[], int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    int leftTemp[n1], rightTemp[n2];
+
+    for (int i = 0; i < n1; i++) {
+        leftTemp[i] = v[left + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        rightTemp[j] = v[mid + 1 + j];
+    }
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (leftTemp[i] <= rightTemp[j]) {
+            v[k] = leftTemp[i];
+            i++;
+        } else {
+            v[k] = rightTemp[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) {
+        v[k] = leftTemp[i];
+        i++;
+        k++;
+    }
+    while (j < n2) {
+        v[k] = rightTemp[j];
+        j++;
+        k++;
+    }
+}
+
+void mergeSort(int v[], int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergeSort(v, left, mid);
+        mergeSort(v, mid + 1, right);
+        merge(v, left, mid, right);
+    }
+}
+
+
+void heapify(int v[], int n, int i) {
+    int max = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+
+    if (l < n && v[l] > v[max])
+        max = l;
+
+    if (r < n && v[r] > v[max])
+        max = r;
+
+    if (max != i) {
+        swap(v[i], v[max]);
+        heapify(v, n, max);
+    }
+}
+
+void heapSort(int v[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(v, n, i);
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        swap(v[0], v[i]);
+        heapify(v, i, 0);
+    }
+}
+void quickSort(int v[], int left, int right) {
+    if (left < right) {
+        int pivot = v[(left + right) / 2];
+        int i = left, j = right;
+        while (i <= j) {
+            while (v[i] < pivot) {
+                i++;
+            }
+            while (v[j] > pivot) {
+                j--;
+            }
+            if (i <= j) {
+                swap(v[i], v[j]);
+                i++;
+                j--;
+            }
+        }
+        quickSort(v, left, j);
+        quickSort(v, i, right);
+    }
+}
+
+
+bool sortat(int v[], int n) {
+    for (int i = 1; i < n; i++) {
+        if (v[i - 1] > v[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    srand(time(0));
+    const int n = 100000;
+    int v[n];
+    srand(time(nullptr));
+    generateRandomVector(v, n);
+   
+    double rez=0;
+    int v_copy[n];
+    cout<<endl;
+    cout << "Experiment pentru " << n << " elemente generate random:" << endl;
+    cout<<endl;
+    for(int i=1;i<=5;i++){
+        copyVector(v, v_copy, n);
+        auto start_quick = high_resolution_clock::now();
+        quickSort(v_copy, 0, n - 1);
+        auto stop_quick = high_resolution_clock::now();
+        auto duration_quick = duration<double,  std::milli >(stop_quick - start_quick)/1000.0;
+        rez=rez+duration_quick.count();
+    }
+    
+
+    cout << fixed<<setprecision(6)<<"Timp necesar Quick Sort: " << rez/5 << " secunde, sortat: " << sortat(v_copy, n) << endl;
+
+    rez=0;
+    for(int i=1;i<=5;i++){
+        copyVector(v, v_copy, n);
+        auto start_heap = high_resolution_clock::now();
+        heapSort(v_copy, n);
+        auto stop_heap = high_resolution_clock::now();
+        auto duration_heap = duration<double,  std::milli>(stop_heap - start_heap)/1000.0;
+        rez=rez+duration_heap.count();
+    
+    }
+    cout << fixed<<setprecision(6)<<"Timp necesar Heap Sort: " << rez/5 << " secunde, sortat: " << sortat(v_copy, n) << endl;
+   
+    rez=0;
+    for(int i=1;i<=5;i++){
+       copyVector(v, v_copy, n);
+       auto start_merge = high_resolution_clock::now();
+       mergeSort(v_copy, 0, n - 1);
+       auto stop_merge = high_resolution_clock::now();
+       auto duration_merge = duration<double, std::milli>(stop_merge - start_merge)/1000.0;
+       rez=rez+duration_merge.count();
+    }
+    cout << fixed<<setprecision(6)<<"Timp necesar Merge Sort: " << rez/5 << " secunde, sortat: " << sortat(v_copy, n) << endl;
+
+    rez=0;
+    for(int i=1;i<=5;i++){
+        copyVector(v, v_copy, n);
+        auto start_selection = high_resolution_clock::now();
+        selectionSort(v_copy, n);
+        auto stop_selection = high_resolution_clock::now();
+        auto duration_selection = duration<double,std::milli>(stop_selection - start_selection)/1000.0;
+        rez=rez+duration_selection.count();
+    }
+    
+    cout << fixed<<setprecision(6)<<"Timp necesar Selection Sort: " << rez/5  << " secunde, sortat: " << sortat(v_copy, n) << endl;
+
+    rez=0;
+    for(int i=1;i<=5;i++){
+        copyVector(v, v_copy, n);
+        auto start_insertion = high_resolution_clock::now();
+        insertionSort(v_copy, n);
+        auto stop_insertion = high_resolution_clock::now();
+        auto duration_insertion = duration<double, std::milli>(stop_insertion - start_insertion)/1000.0;
+        rez=rez+duration_insertion.count();
+    }
+    cout << fixed<<setprecision(6)<<"Timp necesar Insertion Sort: " << rez/5<< " secunde, sortat: " << sortat(v_copy, n) << endl;
+
+    rez=0;
+    for(int i=1;i<=5;i++){
+        copyVector(v, v_copy, n);
+        auto start_bubble = high_resolution_clock::now();
+        bubbleSort(v_copy, n);
+        auto stop_bubble = high_resolution_clock::now();
+        auto duration_bubble = duration<double, std::milli>(stop_bubble - start_bubble)/1000.0;     
+        rez=rez+duration_bubble.count();
+    }
+   
+    cout <<fixed<<setprecision(6)<< "Timp necesar Bubble Sort: " << rez/5<< " secunde, sortat: " << sortat(v_copy, n) << endl;
+
+    return 0;
+}
